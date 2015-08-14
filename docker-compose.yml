@@ -1,0 +1,21 @@
+data:
+  build: data
+  container_name: powerdns_data
+  volumes:
+    - /var/named
+
+server:
+  build: server
+  container_name: powerdns_server
+  environment:
+    - DEBIAN_FRONTEND=noninteractive
+    - TERM=linux
+  log_driver: syslog
+  log_opt:
+    address: "udp://127.0.0.1:514"
+  ports:
+    - "0.0.0.0:53:53/tcp"
+    - "0.0.0.0:53:53/udp"
+  restart: always
+  volumes_from:
+    - data
