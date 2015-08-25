@@ -1,5 +1,5 @@
 data:
-  build: data
+  image: tianon/true
   container_name: powerdns_data
   volumes:
     - /var/named

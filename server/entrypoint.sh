@@ -16,7 +16,12 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#set -x
+if [ -n "${DEBUG}" ]; then
+  set -x
+fi
+
+export DEBIAN_FRONTEND='noninteractive'
+export TERM='linux'
 
 _install () {
   [ -f /usr/sbin/pdns_server ] && return
@@ -51,50 +56,12 @@ EOF
   return 0
 }
 
-_manage () {
-  _CMD="$1"
-  [ -n "${_CMD}" ] && shift
-
-  case "${_CMD}" in
-    "domain")
-      _manage_domain $*
-      ;;
-    "service")
-      _manage_service $*
-      ;;
-    *)
-      _usage
-      ;;
-  esac
-
-  return 0
-}
-
-_manage_domain () {
-  _CMD="$1"
-  [ -n "${_CMD}" ] && shift
-
-  case "${_CMD}" in
-    "create")
-      _manage_domain_create $*
-      ;;
-    "edit")
-      _manage_domain_edit $*
-      ;;
-    *)
-      _usage
-      ;;
-  esac
-
-  return 0
-}
-
-_manage_domain_create () {
-  _DOMAIN="$1"
+_domain_create () {
+  local _DOMAIN="$1"
   [ -z "${_DOMAIN}" ] && return 1 || shift
 
   grep -q "^zone \"${_DOMAIN}\" {" /var/named/named.conf && return 1
-  [ -f "/var/named/master/${_DOMAIN}" ] && return 1
+  _domain_exists "${_DOMAIN}" && return 1
 
   cat >> /var/named/named.conf <<- EOF
 
@@ -119,83 +86,61 @@ EOF
 	                                IN  NS   ns2.oriaks.com.
 EOF
 
-  _manage_service_reload
+  _service_reload
 
   return 0
 }
 
-_manage_domain_edit () {
-  _DOMAIN="$1"
+_domain_edit () {
+  local _DOMAIN="$1"
   [ -z "${_DOMAIN}" ] && return 1 || shift
 
   grep -q "^zone \"${_DOMAIN}\" {" /var/named/named.conf || return 1
-  [ -f "/var/named/master/${_DOMAIN}" ] || return 1
+  _domain_exists "${_DOMAIN}" || return 1
 
   vi /var/named/master/${_DOMAIN}
 
-  _manage_service_reload
+  _service_reload
 
   return 0
 }
 
-_manage_service () {
-  _CMD="$1"
-  [ -n "${_CMD}" ] && shift
-
-  case "${_CMD}" in
-    "reload")
-      _manage_service_reload $*
-      ;;
-    *)
-      _usage
-      ;;
-  esac
+_domain_exists () {
+  local _DOMAIN="$1"
+  [ -z "${_DOMAIN}" ] && return 1 || shift
+  [ -f "/var/named/master/${_DOMAIN}" ] || return 1
 
   return 0
 }
 
-_manage_service_reload () {
+_domain_list () {
+  local _DOMAIN
+
+  for _DOMAIN in `ls /var/named/master/* | sed 's|/var/named/master/||' | sort`; do
+    printf "${_DOMAIN}\n"
+  done
+}
+
+_service_reload () {
   pdns_control cycle
 
   return 0
 }
 
-_shell () {
-  exec /bin/bash
-
-  return
-}
-
-_usage () {
-  cat <<- EOF
-	Usage: $0 install
-	       $0 init
-	       $0 manage domain create <domain_name>
-	       $0 manage domain edit <domain_name>
-	       $0 manage service reload
-	       $0 shell
-EOF
-
-  return
-}
-
-_CMD="$1"
-[ -n "${_CMD}" ] && shift
-
-case "${_CMD}" in
+case "$1" in
   "install")
-    _install $*
+    _$*
     ;;
   "init")
-    _init $*
+    _$*
     ;;
-  "manage")
-    _manage $*
+  "")
+    /usr/bin/clish
     ;;
-  "shell")
-    _shell $*
+  _*)
+    $*
     ;;
   *)
-    _usage
+    /usr/bin/clish -c "$*"
     ;;
 esac

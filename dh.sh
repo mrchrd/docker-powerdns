@@ -6,8 +6,7 @@ _usage () {
 	       $0 start                        Start services
 	       $0 stop                         Stop services
 	       $0 restart                      Restart services
-	       $0 manage SERVICE [ARG...]      Manage a running service
-	       $0 shell SERVICE                Open a shell in the running service
+	       $0 manage SERVICE [ARG...]      Manage the running service
 
 EOF
 }
@@ -25,16 +24,13 @@ case "${_CMD}" in
     docker-compose build
     ;;
   "manage")
-    [ -z "${_PROJECT}" -o -z "${_SERVICE}" ] && _usage || docker exec -it "${_PROJECT}_${_SERVICE}" /entrypoint.sh manage $*
+    [ -z "${_PROJECT}" -o -z "${_SERVICE}" ] && _usage || docker exec -it "${_PROJECT}_${_SERVICE}" /entrypoint.sh $*
     ;;
   "restart")
     docker-compose restart
     ;;
   "start")
     docker-compose up -d
-    ;;
-  "shell")
-    [ -z "${_PROJECT}" -o -z "${_SERVICE}" ] && _usage || docker exec -it "${_PROJECT}_${_SERVICE}" /entrypoint.sh shell
     ;;
   "stop")
     docker-compose stop
