@@ -4,7 +4,21 @@
     <COMMAND name=".." help="Return to the previous view" view="root-view" />
     <COMMAND name="create" help="Create a new domain">
       <PARAM name="domain" help="Domain name" ptype="STRING" />
-      <ACTION>/entrypoint.sh _domain_create "${domain}"</ACTION>
+      <ACTION>/entrypoint.sh _domain_create_master "${domain}"</ACTION>
+    </COMMAND>
+    <COMMAND name="create_master" help="Create a new master domain">
+      <PARAM name="domain" help="Domain name" ptype="STRING" />
+      <ACTION>/entrypoint.sh _domain_create_master "${domain}"</ACTION>
+    </COMMAND>
+    <COMMAND name="create_slave" help="Create a new slave domain">
+      <PARAM name="domain" help="Domain name" ptype="STRING" />
+      <PARAM name="master_ip" help="IP address of the master" ptype="STRING" />
+      <PARAM name="tsig" help="TSIG Key" ptype="STRING" />
+      <ACTION>/entrypoint.sh _domain_create_slave "${domain}" "${master_ip}" "${tsig}"</ACTION>
+    </COMMAND>
+    <COMMAND name="drop" help="Drop an existing domain">
+      <PARAM name="domain" help="Domain name" ptype="STRING" />
+      <ACTION>/entrypoint.sh _domain_drop "${domain}"</ACTION>
     </COMMAND>
     <COMMAND name="edit" help="Edit an existing domain">
       <PARAM name="domain" help="Name of the domain" ptype="STRING" />

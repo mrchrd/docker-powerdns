@@ -4,7 +4,7 @@
     <COMMAND name="domain" view="domain" help="Enter the domain view" />
     <NAMESPACE ref="domain" prefix="domain" help="true" />
     <COMMAND name="shell" help="Invoke an interactive shell">
-      <ACTION>/bin/bash</ACTION>
+      <ACTION>sigexec /bin/bash</ACTION>
     </COMMAND>
   </VIEW>
 </CLISH_MODULE>

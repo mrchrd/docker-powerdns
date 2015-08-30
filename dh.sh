@@ -1,5 +1,8 @@
 #!/bin/sh
 
+_REPO='oriaks'
+_SERVICES='server'
+
 _usage () {
   cat <<- EOF
 	Usage: $0 build                        Build images
@@ -21,7 +24,9 @@ _SERVICE="$2"
 
 case "${_CMD}" in
   "build")
-    docker-compose build
+    for _SERVICE in ${_SERVICES}; do
+      docker build --force-rm=true -t "${_REPO}/${_PROJECT}_${_SERVICE}:latest" ${_SERVICE}
+    done
     ;;
   "manage")
     [ -z "${_PROJECT}" -o -z "${_SERVICE}" ] && _usage || docker exec -it "${_PROJECT}_${_SERVICE}" /entrypoint.sh $*
